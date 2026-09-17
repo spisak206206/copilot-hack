@@ -1,0 +1,11 @@
+﻿# .NET build artifacts
+gui/bin/
+gui/obj/
+
+# Runtime SQLite data (durable local persistence, not source)
+gui/data/
+gui/bin/**/data/
+
+# Native build output and downloaded tunnel executable
+build/
+cloudflared.exe

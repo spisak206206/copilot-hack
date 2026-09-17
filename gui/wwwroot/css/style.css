@@ -1,0 +1,298 @@
+/* ==========================================================================
+   A.S.D. 21. STOROČIE MINIMALISTICKÝ DESIGN (MAXIMÁLNE 2 FARBY)
+   1. Hlavná tmavá farba: Dark Obsidian / Charcoal (#0a0f1d, #111827)
+   2. Akcentová farba: Electric Cyber Cyan / Ice Blue (#38bdf8, #00f2fe)
+   ========================================================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --asd-bg-main: #0a0f1d;
+    --asd-bg-card: #111827;
+    --asd-bg-hover: #1f2937;
+    --asd-border: #1e293b;
+    --asd-accent: #38bdf8;
+    --asd-accent-bright: #00f2fe;
+    --asd-text-main: #f8fafc;
+    --asd-text-muted: #94a3b8;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background-color: var(--asd-bg-main);
+    color: var(--asd-text-main);
+    min-height: 100vh;
+    letter-spacing: -0.01em;
+}
+
+/* ========================================== */
+/* UNIFIED 2-COLOR OVERRIDES FOR ALL BADGES & BUTTONS */
+/* ========================================== */
+.text-warning, .text-danger, .text-success, .text-info, .text-primary {
+    color: var(--asd-accent) !important;
+}
+
+.bg-warning, .bg-danger, .bg-success, .bg-info, .bg-primary, .bg-secondary {
+    background-color: var(--asd-bg-hover) !important;
+    color: var(--asd-accent) !important;
+    border: 1px solid var(--asd-border) !important;
+}
+
+.badge {
+    border-radius: 0.375rem;
+    font-weight: 600;
+    padding: 0.35em 0.65em;
+    letter-spacing: 0.02em;
+}
+
+.btn-warning, .btn-danger, .btn-success, .btn-info, .btn-primary {
+    background-color: var(--asd-accent) !important;
+    color: #040711 !important;
+    border: 1px solid var(--asd-accent) !important;
+    font-weight: 700 !important;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-warning:hover, .btn-danger:hover, .btn-success:hover, .btn-info:hover, .btn-primary:hover {
+    background-color: var(--asd-accent-bright) !important;
+    border-color: var(--asd-accent-bright) !important;
+    color: #000 !important;
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+}
+
+.btn-outline-warning, .btn-outline-danger, .btn-outline-success, .btn-outline-info, .btn-outline-primary, .btn-outline-secondary {
+    border-color: var(--asd-border) !important;
+    color: var(--asd-accent) !important;
+    background-color: transparent !important;
+}
+
+.btn-outline-warning:hover, .btn-outline-danger:hover, .btn-outline-success:hover, .btn-outline-info:hover, .btn-outline-primary:hover, .btn-outline-secondary:hover {
+    border-color: var(--asd-accent) !important;
+    background-color: rgba(56, 189, 248, 0.1) !important;
+    color: var(--asd-accent-bright) !important;
+}
+
+/* ========================================== */
+/* LOGIN SCREEN STYLES                        */
+/* ========================================== */
+.login-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: radial-gradient(circle at center, #111827 0%, #0a0f1d 100%);
+    padding: 1.5rem;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 440px;
+    background: var(--asd-bg-card);
+    border: 1px solid var(--asd-border);
+    border-radius: 1rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+}
+
+.login-header {
+    background: var(--asd-bg-main);
+    padding: 2.5rem 1.5rem 1.5rem 1.5rem;
+    border-bottom: 1px solid var(--asd-border);
+}
+
+.brand-logo i {
+    font-size: 3.5rem;
+    color: var(--asd-accent);
+}
+
+.cursor-pointer {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cursor-pointer:hover {
+    background-color: var(--asd-accent) !important;
+    color: #000 !important;
+}
+
+/* ========================================== */
+/* CARDS, TABLES & NAVBAR                     */
+/* ========================================== */
+.navbar {
+    background-color: var(--asd-bg-card) !important;
+    border-bottom: 1px solid var(--asd-border) !important;
+}
+
+.card {
+    background-color: var(--asd-bg-card) !important;
+    border: 1px solid var(--asd-border) !important;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.card-header {
+    background-color: rgba(31, 41, 55, 0.5) !important;
+    border-bottom: 1px solid var(--asd-border) !important;
+}
+
+.table-dark {
+    --bs-table-bg: var(--asd-bg-card);
+    --bs-table-border-color: var(--asd-border);
+    color: var(--asd-text-main);
+}
+
+.table-secondary {
+    background-color: var(--asd-bg-hover) !important;
+    color: var(--asd-accent) !important;
+}
+
+.form-control, .form-select {
+    background-color: var(--asd-bg-main) !important;
+    border: 1px solid var(--asd-border) !important;
+    color: var(--asd-text-main) !important;
+    border-radius: 0.5rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--asd-accent) !important;
+    box-shadow: 0 0 0 0.25rem rgba(56, 189, 248, 0.25) !important;
+}
+
+.avatar-circle {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background-color: var(--asd-accent) !important;
+    color: #000 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.font-monospace {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    letter-spacing: -0.02em;
+}
+
+.hover-highlight:hover {
+    background-color: var(--asd-bg-hover) !important;
+    border-color: var(--asd-accent) !important;
+    transform: translateX(4px);
+    transition: all 0.15s ease-in-out;
+}
+
+.accordion-dark .accordion-button {
+    background-color: var(--asd-bg-hover) !important;
+    color: var(--asd-text-main) !important;
+    border: 1px solid var(--asd-border) !important;
+}
+
+.accordion-dark .accordion-button::after {
+    filter: invert(1);
+}
+
+.accordion-dark .accordion-body {
+    background-color: var(--asd-bg-main) !important;
+}
+
+/* ========================================== */
+/* MODALS                                     */
+/* ========================================== */
+.modal-content {
+    background-color: var(--asd-bg-card) !important;
+    border: 1px solid var(--asd-border) !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8) !important;
+    border-radius: 1rem;
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--asd-border) !important;
+    background-color: rgba(31, 41, 55, 0.6) !important;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--asd-border) !important;
+    background-color: rgba(31, 41, 55, 0.4) !important;
+}
+
+/* ========================================== */
+/* PRINT & DOCUMENT STYLES (ZÁKAZKOVÝ LIST)   */
+/* ========================================== */
+.printable-document {
+    background: #ffffff;
+    color: #0f172a;
+    font-family: 'Plus Jakarta Sans', Arial, sans-serif;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    line-height: 1.4;
+}
+
+.printable-document h4, .printable-document h5, .printable-document h6 {
+    color: #0f172a;
+}
+
+.doc-header-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+}
+
+.doc-header-table td {
+    padding: 0.4rem;
+    vertical-align: top;
+}
+
+.doc-border-box {
+    border: 1px solid #cbd5e1;
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+    background: #f8fafc;
+}
+
+.doc-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.doc-table th, .doc-table td {
+    border: 1px solid #cbd5e1;
+    padding: 0.45rem 0.6rem;
+    font-size: 0.85rem;
+}
+
+.doc-table th {
+    background-color: #e2e8f0;
+    color: #1e293b;
+    font-weight: 700;
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #zakazkovyListModal, #zakazkovyListModal * {
+        visibility: visible;
+    }
+    #zakazkovyListModal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background: white !important;
+    }
+    .modal-header, .modal-footer, .nav-tabs {
+        display: none !important;
+    }
+    .printable-document {
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+    }
+}
