@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autoservisný Systém a Diagnostika (A.S.D.)</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- ========================================== -->
+    <!-- 1. CISTÁ PRIHLASOVACIA OBRAZOVKA (LOGIN)   -->
+    <!-- ========================================== -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-card shadow-lg">
+            <div class="login-header text-center">
+                <div class="brand-logo mb-2">
+                    <i class="fa-solid fa-car-burst text-warning"></i>
+                </div>
+                <h3 class="fw-bold text-white mb-1">A.S.D.</h3>
+                <p class="text-secondary small mb-0">Autoservisný Systém a Diagnostika v1.0</p>
+            </div>
+            
+            <div class="login-body p-4">
+                <div id="loginAlert" class="alert alert-danger py-2 small d-none" role="alert">
+                    <i class="fa-solid fa-circle-exclamation me-2"></i><span id="loginAlertText">Neplatné údaje</span>
+                </div>
+
+                <form onsubmit="event.preventDefault(); handleLogin();">
+                    <div class="mb-3">
+                        <label class="form-label text-light small fw-semibold">Meno (Username)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fa-solid fa-user"></i></span>
+                            <input type="text" class="form-control bg-dark text-white border-secondary" id="loginUsername" placeholder="Zadajte používateľské meno" required autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-light small fw-semibold">Heslo (Password)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fa-solid fa-lock"></i></span>
+                            <input type="password" class="form-control bg-dark text-white border-secondary" id="loginPassword" placeholder="Zadajte heslo" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning w-100 fw-bold py-2 shadow-sm text-dark">
+                        <i class="fa-solid fa-right-to-bracket me-2"></i>PRIHLÁSIŤ SA DO SYSTÉMU
+                    </button>
+                </form>
+
+                <div class="mt-4 p-3 bg-dark rounded border border-secondary text-light">
+                    <div class="fw-bold text-warning small mb-2"><i class="fa-solid fa-users me-1"></i>Prihlasovacie údaje používateľov:</div>
+                    <div class="d-flex flex-wrap gap-1 mb-2">
+                        <button class="btn btn-sm btn-outline-warning text-white py-0 px-2 small" onclick="quickFill('admin', 'admin')">Admin</button>
+                        <button class="btn btn-sm btn-outline-warning text-white py-0 px-2 small" onclick="quickFill('majitel', 'majitel')">Majiteľ</button>
+                        <button class="btn btn-sm btn-outline-warning text-white py-0 px-2 small" onclick="quickFill('riaditel', 'riaditel')">Riaditeľ</button>
+                        <button class="btn btn-sm btn-outline-warning text-white py-0 px-2 small" onclick="quickFill('technik', 'technik')">Technik</button>
+                        <button class="btn btn-sm btn-outline-warning text-white py-0 px-2 small" onclick="quickFill('skladnik', 'skladnik')">Skladník</button>
+                        <button class="btn btn-sm btn-outline-warning text-white py-0 px-2 small" onclick="quickFill('mechanik', 'mechanik')">Mechanik</button>
+                        <button class="btn btn-sm btn-outline-warning text-white py-0 px-2 small" onclick="quickFill('uctovnik', 'uctovnik')">Účtovník</button>
+                    </div>
+                    <div class="x-small text-muted font-monospace" style="font-size: 0.75rem;">
+                        Meno : Heslo<br>
+                        • admin : admin<br>
+                        • majitel : majitel<br>
+                        • riaditel : riaditel<br>
+                        • technik (alebo prijimaci technik) : technik<br>
+                        • skladnik : skladnik<br>
+                        • mechanik : mechanik<br>
+                        • uctovnik : uctovnik
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 2. ROZHRANIE PO PRIHLÁSENÍ (MAIN APP)      -->
+    <!-- ========================================== -->
+    <div id="appScreen" class="d-none">
+        
+        <!-- TOP NAVBAR -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow border-bottom border-secondary px-3">
+            <div class="container-fluid">
+                <a class="navbar-brand fw-bold text-warning d-flex align-items-center" href="#">
+                    <i class="fa-solid fa-car-burst fs-4 me-2"></i>
+                    <span>A.S.D.</span>
+                    <span class="badge bg-secondary fs-7 text-white ms-2" id="appRoleBadge">Rola</span>
+                    <span class="badge bg-warning text-dark fs-7 ms-2 fw-bold" id="currentLangNavbarBadge"><i class="fa-solid fa-globe me-1"></i>SK - Slovenský</span>
+                    <div id="navbarCompanyLogoBox" class="ms-3 d-none d-md-flex align-items-center">
+                        <img id="navbarCompanyLogoImg" src="" alt="Logo" class="rounded border border-warning shadow-sm" style="height: 34px; max-width: 140px; object-fit: contain; background: #0f172a; padding: 2px;">
+                    </div>
+                </a>
+
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Hlasový asistent -->
+                    <div class="voice-widget d-none d-md-flex align-items-center bg-dark border border-secondary rounded-pill px-3 py-1">
+                        <i class="fa-solid fa-microphone text-danger me-2 fa-pulse"></i>
+                        <input type="text" class="bg-transparent border-0 text-white small" id="voiceCommandInput" placeholder="Hlasový príkaz..." style="outline:none; width: 180px;">
+                        <button class="btn btn-link p-0 text-warning text-decoration-none small fw-bold" onclick="simulateVoiceCommand()">Odoslať</button>
+                    </div>
+
+                    <!-- Profil používateľa -->
+                    <div class="d-flex align-items-center text-white border-start border-secondary ps-3 ms-2">
+                        <div class="avatar-circle bg-warning text-dark fw-bold me-2" id="userAvatar">A</div>
+                        <div class="text-end me-3">
+                            <div class="fw-bold small text-white" id="userNameDisplay">Meno Používateľa</div>
+                            <small class="text-secondary" style="font-size: 0.75rem;" id="userCompanyDisplay">Spoločnosť</small>
+                        </div>
+                        <button class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-semibold" onclick="logout()">
+                            <i class="fa-solid fa-right-from-bracket me-1"></i>Odhlásiť
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- DASHBOARD CONTAINER (Prispôsobený výhradne roli prihláseného užívateľa) -->
+        <div class="container-fluid p-4">
+            <div id="roleInterfaceContainer">
+                <!-- Dynamicky načítaný obsah výhradne pre prihlásenú rolu -->
+            </div>
+
+            <!-- CHAT MESAGER PRE VŠETKY ROLY -->
+            <div class="card shadow-sm border-0 mt-4 bg-dark text-white border-secondary">
+                <div class="card-header bg-dark text-warning border-secondary fw-bold d-flex justify-content-between align-items-center">
+                    <span><i class="fa-solid fa-comments me-2"></i>Vnútorná komunikácia v rámci A.S.D.</span>
+                    <span class="badge bg-secondary text-white" id="chatRoleTag">Komunikácia</span>
+                </div>
+                <div class="card-body p-3">
+                    <div class="p-3 bg-secondary bg-opacity-10 rounded border border-secondary mb-3 font-monospace small" style="height: 120px; overflow-y: auto;" id="systemChatBox">
+                        <!-- Chat messages -->
+                    </div>
+                    <div class="input-group">
+                        <input type="text" class="form-control bg-dark text-white border-secondary" id="globalChatInput" placeholder="Napíšte správu pre kolegov alebo vedenie...">
+                        <button class="btn btn-warning text-dark fw-bold" onclick="sendGlobalChatMessage()">
+                            <i class="fa-solid fa-paper-plane me-1"></i>Odoslať
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- PDF Modal -->
+    <div class="modal fade" id="pdfModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-warning"><i class="fa-solid fa-file-pdf text-danger me-2"></i>PDF e-Faktúra Vzor (A.S.D.)</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body bg-light text-dark p-4 rounded m-3 border border-secondary" id="pdfModalContent">
+                    <!-- PDF text template -->
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button class="btn btn-danger text-white fw-bold" onclick="downloadPdfFromElement('pdfModalContent', 'E-FAKTURA_ASD.pdf')">
+                        <i class="fa-solid fa-file-pdf me-1"></i>Stiahnuť ako PDF
+                    </button>
+                    <button class="btn btn-warning text-dark fw-bold" onclick="printElement('pdfModalContent')">
+                        <i class="fa-solid fa-print me-1"></i>Tlačiť
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvoriť</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ZÁKAZKOVÝ A PRACOVNÝ LIST MODAL -->
+    <div class="modal fade" id="zakazkovyListModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary d-flex justify-content-between align-items-center">
+                    <h5 class="modal-title text-warning fw-bold"><i class="fa-solid fa-file-contract text-warning me-2"></i>ZÁKAZKOVÝ & PRACOVNÝ LIST (A.S.D. Vzor)</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body bg-secondary bg-opacity-20 p-4" id="zakazkovyListModalBody">
+                    <!-- Rendered Document -->
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button class="btn btn-danger text-white fw-bold px-4" onclick="downloadPdfFromElement('zakazkovyListModalBody', 'ZAKAZKOVY_LIST_ASD.pdf')">
+                        <i class="fa-solid fa-file-pdf me-2"></i>STIAHNUŤ AKO PDF
+                    </button>
+                    <button class="btn btn-warning text-dark fw-bold px-4" onclick="printElement('zakazkovyListModalBody')">
+                        <i class="fa-solid fa-print me-2"></i>TLAČIŤ
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvoriť</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOVÁ ZÁKAZKA MODAL (PODĽA OFICIÁLNEJ VZORKY ASD) -->
+    <div class="modal fade" id="newWorkOrderModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content bg-dark text-white border-secondary shadow-lg">
+                <div class="modal-header border-secondary bg-dark text-white py-2 px-3">
+                    <h5 class="modal-title fw-bold text-white fs-6">
+                        <i class="fa-solid fa-file-signature me-2 text-warning"></i>Zákazka - Príjem a Otvorenie Servisnej Zákazky
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-3 bg-dark">
+                    <form id="newWorkOrderForm" onsubmit="event.preventDefault(); saveNewWorkOrder();">
+                        <div class="row g-3">
+
+                            <!-- STĹPEC 1: ZÁKAZNÍK A POPIS ZÁKAZKY -->
+                            <div class="col-lg-4 col-md-12">
+                                <div class="card bg-secondary bg-opacity-10 border-secondary h-100 p-2">
+                                    <div class="card-header bg-transparent border-secondary p-1 fw-bold text-warning small d-flex justify-content-between align-items-center">
+                                        <span><i class="fa-solid fa-user me-1"></i>Zákazník (Partner)</span>
+                                        <button type="button" class="btn btn-outline-info btn-sm py-0 px-2 x-small" onclick="selectSampleCustomer()">Vybrať</button>
+                                    </div>
+                                    <div class="card-body p-2">
+                                        <div class="mb-2">
+                                            <label class="form-label x-small text-muted mb-0">Firma (priezvisko a meno) *</label>
+                                            <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="woCustomer" placeholder="Viktor Szemán" required>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label x-small text-muted mb-0">Doplňujúce údaje</label>
+                                            <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary mb-1" id="woCustInfo1" placeholder="Doplňujúci údaj 1">
+                                            <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="woCustInfo2" placeholder="Doplňujúci údaj 2">
+                                        </div>
+                                        <div class="row g-1 mb-2">
+                                            <div class="col-6">
+                                                <label class="form-label x-small text-muted mb-0">Ulica</label>
+                                                <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="woStreet" placeholder="Hlavná 219">
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label x-small text-muted mb-0">Mesto</label>
+                                                <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="woCity" placeholder="Debraď">
+                                            </div>
+                                        </div>
+                                        <div class="row g-1 mb-2">
+                                            <div class="col-6">
+                                                <label class="form-label x-small text-muted mb-0">Telefón</label>
+                                                <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="woPhone" placeholder="0908374050">
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label x-small text-muted mb-0">E-mail</label>
+                                                <input type="email" class="form-control form-control-sm bg-dark text-white border-secondary" id="woEmail" placeholder="szeman@firma.sk">
+                                            </div>
+                                        </div>
+                                        <div class="row g-1 mb-2">
+                                            <div class="col-6">
+                                                <label class="form-label x-small text-muted mb-0">IČO</label>
+                                                <div class="input-group input-group-sm">
+                                                    <input type="text" class="form-control bg-dark text-white border-secondary" id="woIco" placeholder="53895843">
+                                                    <button type="button" class="btn btn-outline-warning" onclick="loadIcoData()"><i class="fa-solid fa-download"></i></button>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label x-small text-muted mb-0">DIČ</label>
+                                                <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="woDic" placeholder="2121522271">
+                                            </div>
+                                        </div>
+                                        <div class="row g-1 mb-2">
+                                            <div class="col-8">
+                                                <label class="form-label x-small text-muted mb-0">(Štát) IČ DPH</label>
+                                                <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="woIcDph" placeholder="SK2121522271">
+                                            </div>
+                                            <div class="col-4">
+                                                <label class="form-label x-small text-muted mb-0">Typ</label>
+                                                <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="woPartnerType" placeholder="Firma">
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-3">
+                                            <label class="form-label x-small text-warning fw-bold mb-1"><i class="fa-solid fa-comment-dots me-1"></i>Popis zákazky</label>
+                                            <textarea class="form-control form-control-sm bg-dark text-white border-secondary" id="woFault" rows="3" placeholder="Výmena oleja s prehliadkou..."></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- STĹPEC 2: ZÁKAZKA, TERMÍNY A PRÍSLUŠENSTVO -->
+                            <div class="col-lg-4 col-md-12">
+                                <div class="card bg-secondary bg-opacity-10 border-secondary h-100 p-2">
+                                    <div class="card-header bg-transparent border-secondary p-1 fw-bold text-info small">
+                                        <i class="fa-solid fa-folder-open me-1"></i>Zákazka & Termíny
+                                    </div>
+                                    <div class="card-body p-2">
+                                        <div class="row g-1 mb-2">
+                                            <div class="col-6">
+                                                <label class="form-label x-small text-muted mb-0">Označenie</label>
+                                                <input type="text" class="form-control form-control-sm bg-dark text-warning fw-bold font-monospace border-secondary" id="woNumberDisplay" value="2026/0040" readonly>
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label x-small text-muted mb-0">Druh</label>
+                                                <select class="form-select form-select-sm bg-dark text-white border-secondary" id="woType">
+                                                    <option value="Bežná">Bežná oprava</option>
+                                                    <option value="Záručná">Záručná oprava</option>
+                                                    <option value="Pozáručná">Pozáručná oprava</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label x-small text-muted mb-0">Pracovník</label>
+                                            <select class="form-select form-select-sm bg-dark text-white border-secondary" id="woWorker">
+                                                <option value="Dioniz Focko">Dioniz Focko (Prijímací technik)</option>
+                                                <option value="Ján Mechanik">Ján Mechanik (Mechanik)</option>
+                                            </select>
+                                        </div>
+                                        <div class="row g-1 mb-2">
+                                            <div class="col-6">
+                                                <label class="form-label x-small text-muted mb-0">Pristavil</label>
+                                                <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="woPristavil" value="Viktor Szemán">
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label x-small text-muted mb-0">Prevzal</label>
+                                                <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="woPrevzal" value="Dioniz Focko">
+                                            </div>
+                                        </div>
+                                        <div class="row g-1 mb-2">
+                                            <div class="col-6">
+                                                <label class="form-label x-small text-muted mb-0">Dátum a čas prijatia</label>
+                                                <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="woDateRec" value="10.09.2026 14:37">
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label x-small text-muted mb-0">Plán. ukončenie</label>
+                                                <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="woDateDone" value="17.09.2026">
+                                            </div>
+                                        </div>
+                                        <div class="row g-1 mb-2">
+                                            <div class="col-6">
+                                                <label class="form-label x-small text-muted mb-0">Predbežná cena</label>
+                                                <input type="number" step="0.01" class="form-control form-control-sm bg-dark text-white border-secondary" id="woAmount" value="280.00">
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label x-small text-muted mb-0">Záloha (EUR)</label>
+                                                <input type="number" step="0.01" class="form-control form-control-sm bg-dark text-white border-secondary" id="woZaloha" value="50.00">
+                                            </div>
+                                        </div>
+                                        <div class="form-check x-small mb-1">
+                                            <input class="form-check-input" type="checkbox" id="woPrintZalohaCheck">
+                                            <label class="form-check-label text-muted" for="woPrintZalohaCheck">Tlačiť doklad pre zálohu</label>
+                                        </div>
+                                        <div class="form-check x-small mb-2">
+                                            <input class="form-check-input" type="checkbox" id="woZalohaDphCheck" checked>
+                                            <label class="form-check-label text-muted" for="woZalohaDphCheck">Záloha účtovaná s DPH</label>
+                                        </div>
+
+                                        <!-- PRÍSLUŠENSTVO VOZIDLA CHECKBOXES -->
+                                        <div class="p-2 bg-dark rounded border border-secondary mt-2">
+                                            <div class="x-small text-warning fw-bold mb-1"><i class="fa-solid fa-list-check me-1"></i>Príslušenstvo vozidla:</div>
+                                            <div class="row g-1 x-small">
+                                                <div class="col-4"><label><input type="checkbox" checked> Rádio</label></div>
+                                                <div class="col-4"><label><input type="checkbox" checked> Svetlomety</label></div>
+                                                <div class="col-4"><label><input type="checkbox"> Hustilka</label></div>
+                                                <div class="col-4"><label><input type="checkbox" checked> Lekárnička</label></div>
+                                                <div class="col-4"><label><input type="checkbox" checked> Zdvihák</label></div>
+                                                <div class="col-4"><label><input type="checkbox" checked> Opierky</label></div>
+                                                <div class="col-4"><label><input type="checkbox" checked> Trojuholník</label></div>
+                                                <div class="col-4"><label><input type="checkbox" checked> Rezerva</label></div>
+                                                <div class="col-4"><label><input type="checkbox" checked> Anténa</label></div>
+                                                <div class="col-4"><label><input type="checkbox" checked> Náradie</label></div>
+                                                <div class="col-4"><label><input type="checkbox"> Poťahy</label></div>
+                                                <div class="col-4"><label><input type="checkbox" checked> Lano</label></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- STĹPEC 3: VOZIDLO, TECHNICKÉ PARAMETRE A NAČÍTANIE Z TP -->
+                            <div class="col-lg-4 col-md-12">
+                                <div class="card bg-secondary bg-opacity-10 border-secondary h-100 p-2">
+                                    <div class="card-header bg-transparent border-secondary p-1 fw-bold text-success small d-flex justify-content-between align-items-center">
+                                        <span><i class="fa-solid fa-car me-1"></i>Vozidlo & TP</span>
+                                        <button type="button" class="btn btn-info text-dark btn-sm py-0 px-2 fw-bold x-small" onclick="openTpScanModal()">
+                                            <i class="fa-solid fa-id-card me-1"></i>Načítať z TP
+                                        </button>
+                                    </div>
+                                    <div class="card-body p-2">
+                                        <div class="row g-1 mb-2">
+                                            <div class="col-8">
+                                                <label class="form-label x-small text-muted mb-0">EČ (ŠPZ) *</label>
+                                                <input type="text" class="form-control form-control-sm bg-dark text-warning fw-bold font-monospace border-secondary" id="woEcv" placeholder="AB140EI" required>
+                                            </div>
+                                            <div class="col-4 d-flex align-items-end">
+                                                <button type="button" class="btn btn-outline-secondary btn-sm w-100 x-small" onclick="selectSampleCar()">Vybrať</button>
+                                            </div>
+                                        </div>
+                                        <div class="row g-1 mb-2">
+                                            <div class="col-7">
+                                                <label class="form-label x-small text-muted mb-0">Typ vozidla *</label>
+                                                <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="woVehicle" placeholder="Ford Mondeo Combi Hybrid" required>
+                                            </div>
+                                            <div class="col-5">
+                                                <label class="form-label x-small text-muted mb-0">Rok výroby</label>
+                                                <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="woYear" placeholder="09.03.2020">
+                                            </div>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label x-small text-muted mb-0">VIN *</label>
+                                            <input type="text" class="form-control form-control-sm bg-dark text-info font-monospace border-secondary fw-bold" id="woVin" placeholder="WF0FXXWPCHMJ52640">
+                                        </div>
+                                        <div class="row g-1 mb-2">
+                                            <div class="col-8">
+                                                <label class="form-label x-small text-muted mb-0">Typ/variant/verzia</label>
+                                                <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="woVariant" placeholder="BA7H/UACC1FZ">
+                                            </div>
+                                            <div class="col-4">
+                                                <label class="form-label x-small text-muted mb-0">Stav paliva</label>
+                                                <select class="form-select form-select-sm bg-dark text-white border-secondary" id="woFuel">
+                                                    <option value="1/2">1/2 Nádrže</option>
+                                                    <option value="1/4">1/4 Nádrže</option>
+                                                    <option value="3/4">3/4 Nádrže</option>
+                                                    <option value="Plná">Plná Nádrž</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="row g-1 mb-2">
+                                            <div class="col-6">
+                                                <label class="form-label x-small text-muted mb-0">Kód typu motora</label>
+                                                <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="woEngineCode" placeholder="UACC">
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label x-small text-muted mb-0">Stav km</label>
+                                                <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="woOdometer" placeholder="179270">
+                                            </div>
+                                        </div>
+                                        <div class="row g-1 mb-2">
+                                            <div class="col-4">
+                                                <label class="form-label x-small text-muted mb-0">Olej</label>
+                                                <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="woOil" placeholder="5w20">
+                                            </div>
+                                            <div class="col-4">
+                                                <label class="form-label x-small text-muted mb-0">Objem cm³</label>
+                                                <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="woDisplacement" placeholder="1999">
+                                            </div>
+                                            <div class="col-4">
+                                                <label class="form-label x-small text-muted mb-0">Výkon kW</label>
+                                                <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="woPower" placeholder="103">
+                                            </div>
+                                        </div>
+
+                                        <!-- TP BUTTONS & ACCUMULATOR CHECKBOX -->
+                                        <div class="d-flex gap-2 my-2">
+                                            <button type="button" class="btn btn-outline-info btn-sm w-50 x-small" onclick="alert('Zobrazujem históriu opráv vozidla...')">História vozidla</button>
+                                            <button type="button" class="btn btn-info text-dark fw-bold btn-sm w-50 x-small" onclick="openTpScanModal()"><i class="fa-solid fa-id-card me-1"></i>Načítať z TP</button>
+                                        </div>
+
+                                        <div class="form-check x-small mt-2">
+                                            <input class="form-check-input" type="checkbox" id="woAccuCheck" checked>
+                                            <label class="form-check-label text-muted" for="woAccuCheck">Možno odpojiť akumulátor</label>
+                                        </div>
+                                        <div class="form-check x-small">
+                                            <input class="form-check-input" type="checkbox" id="woOldPartsCheck">
+                                            <label class="form-check-label text-muted" for="woOldPartsCheck">Odovzdať staré diely zákazníkovi</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer bg-dark border-secondary justify-content-between p-2">
+                    <button type="button" class="btn btn-outline-secondary px-4 text-white" data-bs-dismiss="modal"><i class="fa-solid fa-xmark me-1"></i>Zrušiť</button>
+                    <button type="button" class="btn btn-success fw-bold px-5" onclick="saveNewWorkOrder()"><i class="fa-solid fa-check me-2"></i>OK (Uložiť Zákazku)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- NOVÁ SKLADOVÁ KARTA MODAL -->
+    <div class="modal fade" id="newStockCardModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary bg-secondary bg-opacity-20">
+                    <h5 class="modal-title text-warning fw-bold"><i class="fa-solid fa-boxes-packing me-2"></i>Vytvorenie Novej Skladovej Karty</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="newStockCardForm" onsubmit="event.preventDefault(); saveNewStockCard();">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-light small fw-bold">Číslo / Kód dielu *</label>
+                                <input type="text" class="form-control bg-dark text-white border-secondary font-monospace" id="scCode" placeholder="Napr. OIL-5W30-CAST" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-light small fw-bold">Názov náhradného dielu *</label>
+                                <input type="text" class="form-control bg-dark text-white border-secondary" id="scName" placeholder="Napr. Motorový olej Castrol Edge 5W-30 5L" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-light small fw-bold">Priradený Sklad (Kategória) *</label>
+                                <select class="form-select bg-dark text-white border-secondary" id="scStore">
+                                    <option value="Autoservis/Oleje">Autoservis / Oleje</option>
+                                    <option value="Autoservis/Brzdy">Autoservis / Brzdy</option>
+                                    <option value="Autoservis/Podvozok">Autoservis / Podvozok</option>
+                                    <option value="Autoservis/Elektricke diely">Autoservis / Elektrické diely</option>
+                                    <option value="Pneuservis/Pneumatiky">Pneuservis / Pneumatiky</option>
+                                    <option value="Pneuservis/Prislusenstvo">Pneuservis / Príslušenstvo</option>
+                                    <option value="Karoseria/Exterier">Karoséria / Exteriér</option>
+                                    <option value="Karoseria/Interier">Karoséria / Interiér</option>
+                                    <option value="Lakovna">Lakovňa</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-light small fw-bold">Počiatočný stav (ks)</label>
+                                <input type="number" class="form-control bg-dark text-white border-secondary" id="scQty" value="10" min="0" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-light small fw-bold">Minimálna zásoba (ks)</label>
+                                <input type="number" class="form-control bg-dark text-white border-secondary" id="scMin" value="3" min="0" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-light small fw-bold">Nákupná cena bez DPH (EUR)</label>
+                                <input type="number" step="0.01" class="form-control bg-dark text-white border-secondary" id="scBuy" placeholder="25.00" oninput="autoCalcSellPrice()" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-warning small fw-bold"><i class="fa-solid fa-lock me-1"></i>Interná Marža (%) [Interný záznam]</label>
+                                <input type="number" step="0.1" class="form-control bg-dark text-warning border-warning fw-bold" id="scMargin" value="65" oninput="autoCalcSellPrice()" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-light small fw-bold">Predajná cena s DPH (EUR)</label>
+                                <input type="number" step="0.01" class="form-control bg-dark text-white border-secondary fw-bold text-success" id="scSell" placeholder="49.50" oninput="autoCalcMarginFromSell()" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-light small fw-bold">Umiestnenie v sklade</label>
+                                <input type="text" class="form-control bg-dark text-white border-secondary" id="scLoc" placeholder="Regál A-2 / Sklad palety">
+                            </div>
+                        </div>
+
+                        <div class="modal-footer border-secondary px-0 pb-0 mt-4">
+                            <button type="submit" class="btn btn-warning text-dark fw-bold px-4">
+                                <i class="fa-solid fa-floppy-disk me-2"></i>VYTVORIŤ SKLADOVÚ KARTU
+                            </button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zrušiť</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VÝDAJKA ZO SKLADU NA ČÍSLO ZÁKAZKY MODAL -->
+    <div class="modal fade" id="vydajkaModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary bg-danger bg-opacity-20">
+                    <h5 class="modal-title text-white fw-bold"><i class="fa-solid fa-file-export me-2 text-danger"></i>Vystavenie Skladovej Výdajky na Číslo Zákazky</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="vydajkaForm" onsubmit="event.preventDefault(); submitVydajka();">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-light small fw-bold">Výber Čísla Zákazky *</label>
+                                <select class="form-select bg-dark text-white border-secondary" id="vydajkaWorkOrderSelect" onchange="updateVydajkaWoInfo()">
+                                    <!-- Populated JS -->
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-light small fw-bold">Informácie o zákazke</label>
+                                <div class="p-2 bg-secondary bg-opacity-20 rounded border border-secondary text-info small" id="vydajkaWoInfo">
+                                    Vyberte zákazku zo zoznamu
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-light small fw-bold">Vydávaný diel / Skladová karta *</label>
+                                <select class="form-select bg-dark text-white border-secondary" id="vydajkaPartSelect">
+                                    <!-- Populated JS -->
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-light small fw-bold">Počet kusov k výdaju *</label>
+                                <input type="number" class="form-control bg-dark text-white border-secondary" id="vydajkaQty" value="1" min="1" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-light small fw-bold">Vydal (Skladník)</label>
+                                <input type="text" class="form-control bg-dark text-white border-secondary" id="vydajkaIssuer" value="Skladník Peter" readonly>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer border-secondary px-0 pb-0 mt-4">
+                            <button type="submit" class="btn btn-danger fw-bold px-4">
+                                <i class="fa-solid fa-check me-2"></i>VYSTAVIŤ VÝDAJKU A PRIRADIŤ K ZÁKAZKE
+                            </button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zrušiť</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DETAIL DTC CHYBOVÉHO KÓDU MODAL -->
+    <div class="modal fade" id="dtcDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary bg-primary bg-opacity-20">
+                    <h5 class="modal-title text-warning fw-bold" id="dtcModalTitle">
+                        <i class="fa-solid fa-triangle-exclamation me-2 text-danger"></i>Detail DTC Chybového Kódu
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4" id="dtcModalBody">
+                    <!-- Populated JS -->
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-warning text-dark fw-bold" id="dtcStockSearchBtn" onclick="searchStockFromDtcModal()">
+                        <i class="fa-solid fa-boxes-stacked me-1"></i>Hľadať súvisiaci diel v Sklade A.S.D.
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvoriť</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SFD ODOMKNUTIE UNLOCK MODAL -->
+    <div class="modal fade" id="sfdUnlockModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark text-white border-warning">
+                <div class="modal-header border-secondary bg-warning bg-opacity-20">
+                    <h5 class="modal-title text-warning fw-bold">
+                        <i class="fa-solid fa-unlock-keyhole me-2"></i>A.S.D. SFD & Security Gateway Global Unlocker
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="p-3 bg-secondary bg-opacity-20 rounded border border-warning mb-3">
+                        <div class="fw-bold text-warning mb-1"><i class="fa-solid fa-shield-cat me-2"></i>Ochrana Zbernice & Riadiacich Jednotiek (SFD 1 / SFD 2 / SGW)</div>
+                        <div class="small text-light">
+                            Tento modul A.S.D. obchádza a odomyká ochranu zápisu, kódovania a akčných členov pre <strong>všetky svetové značky</strong> (VAG SFD/SFD2, FCA SGW, Renault Gateway, Mercedes DoIP, BMW Secure, Toyota Security).
+                        </div>
+                    </div>
+
+                    <form id="sfdUnlockForm" onsubmit="event.preventDefault(); performSfdUnlock();">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-light small fw-bold">Zvoľte Ochranný Protokol</label>
+                                <select class="form-select bg-dark text-white border-secondary" id="sfdProtocolSelect">
+                                    <option value="VAG SFD 1 / SFD 2 (VW, Škoda, Audi, SEAT, Cupra)">VAG SFD 1 / SFD 2 (VW, Škoda, Audi, SEAT, Cupra)</option>
+                                    <option value="FCA Security Gateway (Fiat, Alfa Romeo, Jeep, Dodge, RAM)">FCA Security Gateway (Fiat, Alfa Romeo, Jeep, Dodge, RAM)</option>
+                                    <option value="Renault / Dacia Security Gateway">Renault / Dacia Security Gateway</option>
+                                    <option value="Mercedes-Benz DoIP / Firewall Protection">Mercedes-Benz DoIP / Firewall Protection</option>
+                                    <option value="BMW / MINI Secure Gateway">BMW / MINI Secure Gateway</option>
+                                    <option value="Toyota / Lexus Security Access">Toyota / Lexus Security Access</option>
+                                    <option value="Ford / Lincoln SGW Access">Ford / Lincoln SGW Access</option>
+                                    <option value="Hyundai / Kia Cyber Security Gate">Hyundai / Kia Security Gate</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-light small fw-bold">Trvanie Odomknutia</label>
+                                <select class="form-select bg-dark text-white border-secondary" id="sfdDurationSelect">
+                                    <option value="90 minút (Štandardný servisný úkon)">90 minút (Štandardný servisný úkon)</option>
+                                    <option value="24 hodín (Rozsiahla oprava a kódovanie)">24 hodín (Rozsiahla oprava a kódovanie)</option>
+                                    <option value="Trvalý režim A.S.D. Master Bypass">Trvalý režim A.S.D. Master Bypass</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label text-light small fw-bold">Generovaný A.S.D. SFD Key / Token</label>
+                                <input type="text" class="form-control bg-dark text-warning border-warning font-monospace fw-bold" id="sfdGeneratedToken" value="ASD-SFD2-GLOBAL-UNLOCK-KEY-2026-X88" readonly>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar for Unlock -->
+                        <div class="mt-4 d-none" id="sfdProgressBox">
+                            <label class="form-label text-success small fw-bold" id="sfdProgressStatus">Prebieha autentifikácia a nadväzovanie bezpečenostného handshake...</label>
+                            <div class="progress bg-dark border border-secondary" style="height: 20px;">
+                                <div class="progress-bar bg-warning progress-bar-striped progress-bar-animated" id="sfdProgressBar" style="width: 0%">0%</div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer border-secondary px-0 pb-0 mt-4">
+                            <button type="submit" class="btn btn-warning text-dark fw-bold px-4" id="sfdSubmitBtn">
+                                <i class="fa-solid fa-key me-2"></i>SPUSTIŤ ODOMKNUTIE SFD & PROTIOCHRAN
+                            </button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvoriť</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 1: SMS / E-MAIL NOTIFIKÁCIE ZÁKAZNÍKOM -->
+    <div class="modal fade" id="smsNotificationModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark text-white border-info">
+                <div class="modal-header border-secondary bg-info bg-opacity-20">
+                    <h5 class="modal-title text-info fw-bold">
+                        <i class="fa-solid fa-comment-sms me-2"></i>SMS & E-mail Notifikačný Modul Pre Zákazníka (A.S.D.)
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="smsNotificationForm" onsubmit="event.preventDefault(); sendSmsNotificationSubmit();">
+                        <input type="hidden" id="smsWoId">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-light small fw-bold">Príjemca (Meno & Telefón) *</label>
+                                <input type="text" class="form-control bg-dark text-white border-secondary fw-bold" id="smsCustomerInput" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-light small fw-bold">Kanal Notifikácie</label>
+                                <select class="form-select bg-dark text-white border-secondary" id="smsChannelSelect">
+                                    <option value="SMS">SMS Správa (Mobilné dáta / GSM Brána)</option>
+                                    <option value="EMAIL">E-mail Notifikácia</option>
+                                    <option value="OBADVA">SMS + E-mail súčasne</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label text-warning small fw-bold"><i class="fa-solid fa-bolt me-1"></i>Rýchla šablóna správy:</label>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <button type="button" class="btn btn-sm btn-outline-info text-light" onclick="applySmsPreset('prijate')">
+                                        <i class="fa-solid fa-car-side me-1 text-info"></i>1. Vozidlo prijaté
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-warning text-light" onclick="applySmsPreset('pracuje_sa')">
+                                        <i class="fa-solid fa-wrench me-1 text-warning"></i>2. Servis prebieha
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-success text-light" onclick="applySmsPreset('dokoncene')">
+                                        <i class="fa-solid fa-check me-1 text-success"></i>3. Dokončené & Pripravené
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary text-light" onclick="applySmsPreset('faktura')">
+                                        <i class="fa-solid fa-file-invoice-dollar me-1"></i>4. Faktúra vystavená
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label text-light small fw-bold">Text Notifikačnej Správy *</label>
+                                <textarea class="form-control bg-dark text-white border-secondary font-monospace" id="smsTextarea" rows="4" required></textarea>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer border-secondary px-0 pb-0 mt-4 d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary text-light btn-sm" onclick="toggleSmsHistoryBox()">
+                                <i class="fa-solid fa-clock-rotate-left me-1"></i>História odeslaných SMS
+                            </button>
+                            <div>
+                                <button type="submit" class="btn btn-info text-dark fw-bold px-4">
+                                    <i class="fa-solid fa-paper-plane me-2"></i>ODOSLAŤ NOTIFIKÁCIU ZÁKAZNÍKOVI
+                                </button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zrušiť</button>
+                            </div>
+                        </div>
+
+                        <!-- HISTÓRIA SMS -->
+                        <div class="mt-4 p-3 bg-secondary bg-opacity-10 rounded border border-secondary d-none" id="smsHistoryBox">
+                            <h6 class="fw-bold text-info mb-2 small text-uppercase"><i class="fa-solid fa-list me-2"></i>História notifikácií pre túto zákazku:</h6>
+                            <div class="font-monospace small text-light" id="smsHistoryList">
+                                <em>Žiadne odoslané notifikácie.</em>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: EXPERTNÝ DIAGNOSTICKÝ PROTOKOL PDF -->
+    <div class="modal fade" id="diagProtocolModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content bg-dark text-white border-primary">
+                <div class="modal-header border-secondary bg-primary bg-opacity-20 d-flex justify-content-between align-items-center">
+                    <h5 class="modal-title text-warning fw-bold">
+                        <i class="fa-solid fa-file-medical text-warning me-2"></i>EXPERTNÝ DIAGNOSTICKÝ PROTOKOL A.S.D.
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body bg-light text-dark p-4 rounded m-3 border border-secondary" id="diagProtocolModalBody">
+                    <div id="diagProtocolContent">
+                        <!-- Populated JS -->
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button class="btn btn-danger text-white fw-bold px-4" onclick="downloadPdfFromElement('diagProtocolContent', 'EXPERTNÝ_DIAGNOSTICKÝ_PROTOKOL_ASD.pdf')">
+                        <i class="fa-solid fa-file-pdf me-2"></i>STIAHNUŤ AKO PDF
+                    </button>
+                    <button class="btn btn-warning text-dark fw-bold px-4" onclick="printElement('diagProtocolContent')">
+                        <i class="fa-solid fa-print me-2"></i>TLAČIŤ
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvoriť</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: PLÁNOVAČ & HARMONOGRAM ZDVIHÁKOV -->
+    <div class="modal fade" id="liftScheduleModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content bg-dark text-white border-warning">
+                <div class="modal-header border-secondary bg-warning bg-opacity-20">
+                    <h5 class="modal-title text-warning fw-bold">
+                        <i class="fa-solid fa-calendar-days me-2"></i>Plánovací Kalendár & Harmonogram Zdvihákov (A.S.D.)
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4" id="liftScheduleModalBody">
+                    <!-- Populated JS -->
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvoriť</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: EEPROM OBD-2 PROGRAMÁTOR & HEX EDITOR MODAL -->
+    <div class="modal fade" id="eepromModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content bg-dark text-white border-danger">
+                <div class="modal-header border-secondary bg-danger bg-opacity-20">
+                    <h5 class="modal-title text-danger fw-bold">
+                        <i class="fa-solid fa-microchip me-2 text-danger"></i>A.S.D. EEPROM OBD-2 Direct ECU Programátor & Hex Editor
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4" id="eepromModalBody">
+                    <!-- Populated JS -->
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvoriť Programátor</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: VYČÍTANIE Z TECHNICKÉHO PREUKAZU AUTA (TP / ORV SCANNER) -->
+    <div class="modal fade" id="tpScanModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark text-white border-info shadow-lg">
+                <div class="modal-header border-secondary bg-info bg-opacity-20">
+                    <h5 class="modal-title text-info fw-bold">
+                        <i class="fa-solid fa-id-card me-2 text-warning"></i>A.S.D. Vyčítanie Údajov z Technického Preukazu (TP / ORV OCR)
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="p-3 bg-secondary bg-opacity-10 border border-info rounded mb-4">
+                        <div class="fw-bold text-info mb-1"><i class="fa-solid fa-camera-retro me-2"></i>Optické Načítanie Osvedčenia o Evidencii Vozidla (Časť I / II)</div>
+                        <div class="small text-muted">A.S.D. automaticky vyčíta EČV (ŠPZ), VIN kód, značku, model, objem motora, výkon, palivo a držiteľa vozidla.</div>
+                    </div>
+
+                    <!-- VZOROVÉ TECHNICKÉ PREUKAZY -->
+                    <div class="mb-4">
+                        <label class="form-label text-warning small fw-bold d-block mb-2">Vyberte fotku TP alebo vzorové vozidlo zo zoznamu:</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            <input type="file" id="tpFileInput" accept="image/*" class="d-none" onchange="handleTpPhotoUpload(event)">
+                            <button type="button" class="btn btn-warning text-dark fw-bold btn-sm" onclick="document.getElementById('tpFileInput').click()">
+                                <i class="fa-solid fa-upload me-1"></i>Odfotiť / Nahrať fotku TP
+                            </button>
+                            <button type="button" class="btn btn-outline-info text-info btn-sm" onclick="loadSampleTp('octavia')">
+                                <i class="fa-solid fa-car me-1"></i>Škoda Octavia Combi 2.0 TDI
+                            </button>
+                            <button type="button" class="btn btn-outline-info text-info btn-sm" onclick="loadSampleTp('defender')">
+                                <i class="fa-solid fa-truck-monster me-1"></i>Land Rover Defender 3.0 D250
+                            </button>
+                            <button type="button" class="btn btn-outline-info text-info btn-sm" onclick="loadSampleTp('audi')">
+                                <i class="fa-solid fa-car-rear me-1"></i>Audi A6 Avant 50 TDI
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- PREVIEW & SCAN STATUS -->
+                    <div id="tpScanStatusBox" class="p-3 bg-dark border border-secondary rounded mb-4 text-center">
+                        <div class="badge bg-success mb-2 px-3 py-1 fs-6"><i class="fa-solid fa-check-circle me-1"></i>Technický preukaz úspešne vyčítaný!</div>
+                        <div class="small text-light">OCR algoritmus A.S.D. spracoval doklad s presnosťou 99.8%.</div>
+                    </div>
+
+                    <!-- EXTRACTED TP FORM FIELDS -->
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-warning small fw-bold"><i class="fa-solid fa-user me-1"></i>Vlastník / Držiteľ vozidla</label>
+                            <input type="text" class="form-control bg-secondary bg-opacity-20 text-white border-secondary" id="tpOwner" value="Jozef Mrkvička (+421905123456)">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-warning small fw-bold"><i class="fa-solid fa-location-dot me-1"></i>Sídlo / Adresa držiteľa</label>
+                            <input type="text" class="form-control bg-secondary bg-opacity-20 text-white border-secondary" id="tpAddress" value="Hlavná 42, 040 01 Košice, Slovensko">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-warning small fw-bold"><i class="fa-solid fa-car me-1"></i>Značka a Obchodný názov</label>
+                            <input type="text" class="form-control bg-secondary bg-opacity-20 text-white border-secondary fw-bold" id="tpVehicle" value="Škoda Octavia Combi 2.0 TDI">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-warning small fw-bold"><i class="fa-solid fa-barcode me-1"></i>EČV (ŠPZ)</label>
+                            <input type="text" class="form-control bg-secondary bg-opacity-20 text-warning border-secondary font-monospace fw-bold" id="tpEcv" value="KE-849XX">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-warning small fw-bold"><i class="fa-solid fa-hashtag me-1"></i>Číslo OEV / TP</label>
+                            <input type="text" class="form-control bg-secondary bg-opacity-20 text-white border-secondary font-monospace" id="tpNumber" value="EB098123">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-warning small fw-bold"><i class="fa-solid fa-fingerprint me-1"></i>VIN Kód Vozidla</label>
+                            <input type="text" class="form-control bg-secondary bg-opacity-20 text-info border-secondary font-monospace fw-bold" id="tpVin" value="TMBJJ7NE1J0123456">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-warning small fw-bold"><i class="fa-solid fa-gauge me-1"></i>Objem / Výkon</label>
+                            <input type="text" class="form-control bg-secondary bg-opacity-20 text-white border-secondary" id="tpEngine" value="1968 cm³ / 110 kW">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-warning small fw-bold"><i class="fa-solid fa-gas-pump me-1"></i>Palivo</label>
+                            <input type="text" class="form-control bg-secondary bg-opacity-20 text-white border-secondary" id="tpFuel" value="Nafta (Diesel)">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary justify-content-between">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvoriť</button>
+                    <button type="button" class="btn btn-success fw-bold px-4" onclick="applyTpDataToWorkOrder()">
+                        <i class="fa-solid fa-file-import me-2"></i>Preniesť Údaje Do Zákazky
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: SPRÁVA & ÚPRAVA ZÁKAZIEK -->
+    <div class="modal fade" id="workOrderEditModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content bg-dark text-white border-warning shadow-lg">
+                <div class="modal-header border-secondary bg-warning bg-opacity-20">
+                    <h5 class="modal-title text-warning fw-bold">
+                        <i class="fa-solid fa-pen-to-square me-2"></i>Správa, Úprava & Ukončenie Servisných Zákaziek
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4" id="workOrderEditModalBody">
+                    <!-- Populated JS -->
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvoriť</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GENERICKÝ SYSTÉMOVÝ MODAL PRE VŠETKY ROLY A POŽIADAVKY -->
+    <div class="modal fade" id="genericActionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark text-white border-primary shadow-lg">
+                <div class="modal-header border-secondary bg-primary bg-opacity-20" id="genericModalHeader">
+                    <h5 class="modal-title text-white fw-bold" id="genericModalTitle">
+                        <i class="fa-solid fa-window-restore me-2 text-info"></i>Detail Okna A.S.D.
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4" id="genericModalBody">
+                    <!-- Populated dynamically via JS -->
+                </div>
+                <div class="modal-footer border-secondary" id="genericModalFooter">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvoriť Okno</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
